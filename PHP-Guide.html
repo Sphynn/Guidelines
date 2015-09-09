@@ -1,0 +1,168 @@
+<div id="Wrapper">
+	<div id="Content">
+		<h1>PHP Guidelines</h1>
+		<div class="Guide">
+			<p>In order to keep the code consistent, please use the following conventions. From here on 'good' and 'bad' are used to attribute things that would make the coding style match, or not match. It is not a judgment call on your coding abilities, but more of a style and look call. Please try to follow these guidelines to ensure prettiness.</p>
+			<h2>Performance and Readability</h2>
+			<ul>
+				<li>It is more important to be correct than to be fast.</li>
+				<li>It is more important to be maintainable than to be fast.</li>
+				<li>Fast code that is difficult to maintain is likely going to be looked down upon.</li>
+				<li>If you are modifying someone else's code, try to keep the coding style similar.</li>
+			</ul>
+		</div>
+
+
+
+		<h2>General</h2>
+		<div class="Guide">
+			<h3>Code Demarcation</h3>
+			<p>PHP code must always be delimited by the full-form, standard PHP tags:</p>
+			<p class="Code Good">&lt;?php<br />?&gt;</p>
+
+			<h3>Character Encoding</h3>
+			<p>PHP code MUST use only UTF-8 without BOM.</p>
+
+			<h3>Side Effects</h3>
+			<p>The phrase "side effects" means execution of logic, not directly related to declaring classes, functions, constants, etc., merely from including the file.</p>
+			<p>Side effects include but are not limited to: generating output, explicit use of require or include, connecting to external services, modifying ini settings, emitting errors or exceptions, modifying global or static variables, reading from or writing to a file, and so on.</p>
+			<p class="Code Good">ini_set('error_reporting', E_ALL);<br />include "file.php";<br />echo "&lt;html&gt;\n";<br />function foo(){<br />}</p>
+		</div>
+
+
+
+		<h2>Naming Conventions</h2>
+		<div class="Guide">
+			<h3>Filenames</h3>
+			<p>For all files, only alphanumeric characters and underscores are permitted. Spaces are strictly prohibited.</p>
+			<p class="Code Good">/index.php<br />/assets/js/register.js<br />/common/process_login.php<br />/modules/profile/profile.php</p>
+			<p>Segmented files should be concatenated with the parent name.</p>
+			<p class="Code Good">/account.php<br />/account_changes.php</p>
+
+			<h3>Variables and Functions</h3>
+			<p>Use Pascal Case/Upper Camel Case. Variable names may only contain alphanumeric characters. Numbers are permitted in variable names but are discouraged in most cases.</p>
+			<p>Verbosity is generally encouraged. Variables should always be as verbose as practical to describe the data that the developer intends to store in them. Terse variable names such as <code>$i</code> and <code>$n</code> are discouraged for all but the smallest loop contexts. If a loop contains more than 20 lines of code, the index variables should have more descriptive names. Terse variables should always be lower case.</p>
+			<p>Good:</p>
+			<p class="Code Good">$MyName<br />$AccountNumber<br />$PhoneNumber<br />$e</p>
+			<p>Bad:</p>
+			<p class="Code Bad">$myName<br />$Account_Number<br />$phone_number<br />$_var<br />$E</p>
+		</div>
+
+
+
+		<h2>Style Guidelines</h2>
+		<div class="Guide">
+			<h3>Indentation</h3>
+			<p>Indentation should be done with tabs (and configure your IDE to show a size of 4 spaces for them) for writing your code. A single tab may be used for each nest. Spaces are strictly prohibited.</p>
+
+			<h3>Maximum Line Length</h3>
+			<p>The target line length is 80 characters of code. That is to say, developers should strive keep each line of their code under 80 characters where possible and practical. However, longer lines are acceptable in some circumstances. The maximum length of any line of PHP code is 120 characters.</p>
+
+			<h3>Line Termination</h3>
+			<p>Lines must end with a single linefeed "\n" when generating page content with PHP.</p>
+
+			<h3>Where to put Spaces</h3>
+			<p>Avoid using a space before and after an opening parenthesis and the closing one when calling functions, or indexing:</p>
+			<p>Good:</p>
+			<p class="Code Good">if($a)<br />$Array[0]</p>
+			<p>Bad:</p>
+			<p class="Code Bad">if ( $a )<br />$Array [ 0 ]</p>
+
+			<h3>Where to put Braces</h3>
+			<p>Inside a code block, put the opening brace on the same line as the statement:</p>
+			<p>Good:</p>
+			<p class="Code Good">if($a){<br />&emsp;code();<br />&emsp;code();<br />}</p>
+			<p>Bad:</p>
+			<p class="Code Bad">if($a)<br />{<br />&emsp;code();<br />&emsp;code();<br />}</p>
+			<p>Avoid leaving statements open without open/close braces:</p>
+			<p>Good:</p>
+			<p class="Code Good">if($a){<br />&emsp;code();<br />}</p>
+			<p>Bad:</p>
+			<p class="Code Bad">if($a)<br />&emsp;code();</p>
+
+			<h3>Multiline Parameters</h3>
+			<p>When you need to write down parameters in multiple lines, indent the parameters to be below the previous line parameters, like this:</p>
+			<p>Good:</p>
+			<p class="Code Good">WriteLine($Format, $Foo,<br />
+			&emsp;&emsp;&emsp;&emsp;$Bar, $Baz);</p>
+			<p>If you do not want to have parameters in the same line as the function invocation because you ar running out of space, you can indent the parameters in the next line, like this:</p>
+			<p>Good:</p>
+			<p class="Code Good">WriteLine(<br />
+			&emsp;&emsp;&emsp;&emsp;$Format, $Moved, $Too, $Long);</p>
+			<p>Comma separators go at the end, like a good book, never at the beginning:</p>
+			<p>Passable:</p>
+			<p class="Code Bad">WriteLine($Foo,<br />
+			&emsp;&emsp;&emsp;&emsp;$Bar,<br />
+			&emsp;&emsp;&emsp;&emsp;$Baz);</p>
+			<p>Atrocious:</p>
+			<p class="Code Bad">WriteLine($Foo<br />
+			&emsp;&emsp;&emsp;&emsp;, $Bar<br />
+			&emsp;&emsp;&emsp;&emsp;, $Baz);</p>
+
+			<h3>Whitespace</h3>
+			<p>Use white space in expressions liberally, except in the presence of parenthesis:</p>
+			<p>Good:</p>
+			<p class="Code Good">if($a + 5 &#62; ($Blah  + 4))</p>
+			<p>Bad:</p>
+			<p class="Code Bad">if($a+5&#62;($Blah+4))</p>
+
+			<h3>Comments</h3>
+			<p>For short or long, single or multiline comments use:</p>
+			<p>Good:</p>
+			<p class="Code Good">//<br />
+			// Blah<br />
+			// Blah again<br />
+			// and another Blah<br />
+			//</p>
+			<p>Bad:</p>
+			<p class="Code Bad">/*<br />
+			* Blah<br />
+			* Blah again<br />
+			* and another Blah<br />
+			*/</p>
+
+			<h3>Strings</h3>
+			<p>When a string is literal (contains no variable substitutions), the apostrophe or "single quote" should always be used to demarcate the string:</p>
+			<p class="Code Good">$a = 'Example String';</p>
+			<p>When a literal string itself contains apostrophes, it is permitted to demarcate the string with quotation marks or "double quotes". This is especially useful for SQL statements:</p>
+			<p class="Code Good">$SQL = "SELECT `id`, `name` from `people` WHERE `name`='Fred' OR `name`='Susan'";</p>
+			<p>Variable substitution is permitted:</p>
+			<p class="Code Good">$Greeting = "Hello $Name, welcome back!";</p>
+			<p>Strings must be concatenated using the "." operator. A space must always be added before and after the "." operator to improve readability: </p>
+			<p class="Code Good">$Company = 'Zend' . ' ' . 'Technologies';</p>
+
+			<h3>Arrays</h3>
+			<p>Indexed and Associative arrays should always be declared like this:</p>
+			<p>Good:</p>
+			<p class="Code Good">$Age['Peter'] = "35";<br />$Age['Ben'] = "37";<br />$Age['Joe'] = "43";</p>
+			<p>Bad:</p>
+			<p class="Code Bad">$Age = array("Peter"=&#62;"35", "Ben"=&#62;"37", "Joe"=&#62;"43");</p>
+
+			<h3>Classes</h3>
+			<p>The use of classes should be avoided.</p>
+
+			<h3>Functions</h3>
+			<p>Functions should be restricted to “common” project files. Function arguments should be separated by a single trailing space after the comma delimiter. Call-time pass-by-reference is strictly prohibited. The return value must always be enclosed in parentheses.</p>
+			<p>Good:</p>
+			<p class="Code Good">function bar($arg1, $arg2){<br />}<br />function bar($this){<br />&emsp;return($this);<br />}</p>
+			<p>Bad:</p>
+			<p class="Code Bad">function bar(&$arg1){<br />}<br />function bar($this){<br />&emsp;return $this;<br />}</p>
+
+			<h3>Conditional Statements</h3>
+			<p>Statements should always be written long-hand:</p>
+			<p>Good:</p>
+			<p class="Code Good">if($a &#60; 16){<br />
+			&emsp;$astr = 'child';<br />
+			}<br />
+			else{<br />
+			&emsp;$astr = 'adult';<br />
+			}</p>
+			<p>The use of Ternary Operators should be avoided:</p>
+			<p>Bad:</p>
+			<p class="Code Bad">$astr = ($a &#60; 16) ? 'child' : 'adult';</p>
+
+			<h3>Switches</h3>
+			<p>The use of switches should be avoided.</p>
+		</div>
+	</div>
+</div>
