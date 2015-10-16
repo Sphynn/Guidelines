@@ -68,3 +68,8 @@ git merge master
 ```
 
 If there are conflicts, simply right click the file (in GitHub for Windos) and select 'Discard file'.
+
+To download a repo from current commit
+---------------------
+
+https://github.com/{user}/{repo}/archive/{sha}.zip
