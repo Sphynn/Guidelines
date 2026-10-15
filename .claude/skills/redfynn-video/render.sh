@@ -3,7 +3,7 @@
 # Renders the RedFynn announcement template to an MP4. Works in the cloud sandbox (no network
 # access to remotion.media) by using the pre-installed Chromium headless shell.
 set -euo pipefail
-COMP=${1:?composition: Vertical|Landscape|Square}; OUT=$(realpath -m "${2:?output .mp4}"); PROPS=${3:-}
+COMP=${1:?composition: Vertical|Landscape|Square}; OUT=$(realpath -m "${2:?output .mp4}"); PROPS=${3:+$(realpath "$3")}
 HERE=$(cd "$(dirname "$0")" && pwd)
 WORK=${WORK_DIR:-/tmp/redfynn-video-work}
 
@@ -17,7 +17,7 @@ cd "$WORK"
 
 BROWSER=$(ls /opt/pw-browsers/chromium_headless_shell-*/chrome-linux/headless_shell 2>/dev/null | head -1 || true)
 ARGS=(); [ -n "$BROWSER" ] && ARGS+=(--browser-executable="$BROWSER")
-[ -n "$PROPS" ] && ARGS+=(--props="$(realpath "$PROPS")")
+[ -n "$PROPS" ] && ARGS+=(--props="$PROPS")
 
 mkdir -p "$(dirname "$OUT")"
 npx remotion render src/index.ts "$COMP" "$OUT" "${ARGS[@]}"
