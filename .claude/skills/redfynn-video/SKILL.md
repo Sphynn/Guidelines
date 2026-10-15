@@ -1,0 +1,37 @@
+---
+name: redfynn-video
+description: Make short on-brand RedFynn videos (announcements, awards, social clips, vertical 1080x1920, landscape 1920x1080 or square 1080x1080) with Remotion and render them to MP4. Use whenever someone asks for a RedFynn video, animation, reel, story, motion graphic or "animate this" with RedFynn branding, even if they don't say Remotion. Always use together with redfynn-brand.
+---
+
+# RedFynn video
+
+Builds a short branded video from a template and renders it to MP4. Brand rules come from the **redfynn-brand** skill (2024 Brand Guidelines). Read it first and do not restate or override it here. The repo's own `Style-Guide.html` is the 2015 guide and is out of date. Do not use it.
+
+## Steps
+
+1. Read `redfynn-brand` (SKILL.md and `references/brand-guide.md`).
+2. Ask for, or infer, the copy: overline (optional), headline split into short lines, tagline (optional), footer. Keep it plain, direct and warm. Nothing is bolder than a plain statement.
+3. Write a props file, for example `props.json`:
+   ```json
+   {"durationSeconds": 6, "overline": "Recognized", "headline": ["Inc. 5000,", "two years", "running."], "tagline": "We make it simple.", "footer": "Redfynn.com"}
+   ```
+4. Render: `bash <this-skill-dir>/render.sh Vertical out/video.mp4 props.json`. Compositions: `Vertical` 1080x1920, `Landscape` 1920x1080, `Square` 1080x1080.
+5. Check a still or two before handing off (`npx remotion still` from the work dir, or extract frames with ffmpeg) and look at them. Fix overflow and wrapping, since long headlines and landscape are the usual problems.
+6. Hand off with the notes below.
+
+## Motion rules
+- The **logo never animates**: no fade, move, scale or effect. The 2015 repo guide says "do not add an animation" and "do not change the opacity". The 2024 guide is silent, so treat it as still in force until the brand owner says otherwise.
+- Animate type (rise and fade in line by line), a thin rule, and the gradient. The gradient drifts slowly, which the 2024 guide allows for digital.
+- No bold, no off-palette colors, no drop shadows, no strokes on the logo.
+- The wordmark PNGs have a white background baked in, so the logo sits on a white area, never directly on the gradient. For a logo on gradient, Charcoal or red, ask the brand owner for reversed transparent files.
+
+## Environment gotchas (cloud sandbox)
+- Remotion tries to download Chrome from `remotion.media`, which is blocked (`ENOTFOUND`). `render.sh` passes `--browser-executable` to `/opt/pw-browsers/chromium_headless_shell-*/chrome-linux/headless_shell`. The regular `chrome` binary fails ("Old Headless mode has been removed"), so use the headless shell.
+- The render browser does not trust the proxy CA, so Google Fonts fail with `ERR_CERT_AUTHORITY_INVALID`. The font is bundled in `template/public/` and loaded with `FontFace`. To add another font, download it with `curl --cacert /root/.ccr/ca-bundle.crt` and bundle it the same way.
+- The first render runs `npm ci`, which takes about 30s.
+
+## Hand-off notes (always state these)
+- Font is Hanken Grotesk, a stand-in for the licensed TWK Everett. Swap in the real files if supplied.
+- The gradient is generated in code (radial gradients plus grain), not the real brand artwork.
+- Logo is on white, not on the gradient, for the reason above.
+- Anything added beyond the user's copy (overline, tagline, footer) was a design choice and is easy to remove.
