@@ -1,4 +1,5 @@
-import {AbsoluteFill, continueRender, delayRender, Easing, Img, interpolate, staticFile, useCurrentFrame, useVideoConfig} from 'remotion';
+import {AbsoluteFill, Easing, Img, interpolate, staticFile, useCurrentFrame, useVideoConfig} from 'remotion';
+import {fontFamily} from './font';
 
 export type Props = {
   durationSeconds: number;
@@ -22,21 +23,6 @@ const CHARCOAL = '#1C1B1F';
 const SLATE = '#4D4C4E';
 const GRAIN =
   "url(\"data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")";
-
-// Hanken Grotesk is the stand-in for TWK Everett (licensed). Bundled locally because the render
-// browser can't reach Google Fonts through the sandbox proxy.
-const fontFamily = 'Hanken Grotesk';
-const fontHandle = delayRender('font');
-new FontFace(fontFamily, `url(${staticFile('HankenGrotesk.woff2')})`, {weight: '100 900'})
-  .load()
-  .then((f) => {
-    document.fonts.add(f);
-    continueRender(fontHandle);
-  })
-  .catch((e) => {
-    console.error(e);
-    continueRender(fontHandle);
-  });
 
 const ease = Easing.out(Easing.cubic);
 

@@ -19,6 +19,9 @@ Builds a short branded video from a template and renders it to MP4. Brand rules 
 5. Check a still or two before handing off (`npx remotion still` from the work dir, or extract frames with ffmpeg) and look at them. Fix overflow and wrapping, since long headlines and landscape are the usual problems.
 6. Hand off with the notes below.
 
+## Celebration composition (25-30s story)
+`Celebration` (1080x1920, 28s) is an illustrated sunset yacht party for milestone news (Inc. 5000, awards): cheering crowd, skyline, confetti, fireworks, count-up numbers, a quote, and a white end card with the logo. Copy is driven by props (`year`, `rank`, `prevYear`, `prevRank`, `growth`, `growthWindow`, `quote`, `quoteBy`, `closing`, `url`). Render with `render.sh Celebration out.mp4 props.json`. It is illustration in code, not footage. Real photos or video need files supplied by the brand owner. Use only facts from the source release, and do not name a real location in on-screen text.
+
 ## Motion rules
 - The **logo never animates**: no fade, move, scale or effect. The 2015 repo guide says "do not add an animation" and "do not change the opacity". The 2024 guide is silent, so treat it as still in force until the brand owner says otherwise.
 - Animate type (rise and fade in line by line), a thin rule, and the gradient. The gradient drifts slowly, which the 2024 guide allows for digital.

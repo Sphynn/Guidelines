@@ -20,5 +20,5 @@ ARGS=(); [ -n "$BROWSER" ] && ARGS+=(--browser-executable="$BROWSER")
 [ -n "$PROPS" ] && ARGS+=(--props="$PROPS")
 
 mkdir -p "$(dirname "$OUT")"
-npx remotion render src/index.ts "$COMP" "$OUT" "${ARGS[@]}"
+npx remotion render src/index.ts "$COMP" "$OUT" --crf=24 "${ARGS[@]}"
 ffprobe -v error -show_entries stream=codec_name,width,height,r_frame_rate,duration -of csv=p=0 "$OUT"

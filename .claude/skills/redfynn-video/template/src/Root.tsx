@@ -1,5 +1,6 @@
 import {Composition} from 'remotion';
 import {Announcement, defaultProps, Props} from './Announcement';
+import {Celebration, celebrationDefaults} from './Celebration';
 
 const FPS = 30;
 
@@ -21,5 +22,6 @@ export const Root = () => (
     {make('Vertical', 1080, 1920)}
     {make('Landscape', 1920, 1080)}
     {make('Square', 1080, 1080)}
+    <Composition id="Celebration" component={Celebration} width={1080} height={1920} fps={FPS} durationInFrames={FPS * 28} defaultProps={celebrationDefaults} />
   </>
 );
