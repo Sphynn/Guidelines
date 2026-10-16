@@ -73,3 +73,5 @@ To download a repo from current commit
 ---------------------
 
 https://github.com/{user}/{repo}/archive/{sha}.zip
+
+This is a test line added by Claude.
