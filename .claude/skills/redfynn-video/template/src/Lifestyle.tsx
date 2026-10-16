@@ -12,6 +12,9 @@ export type LifestyleProps = {
   scene4Note: string;
   thanks: string[];
   url: string;
+  tagline: string;
+  /** file in public/ (e.g. 'voiceover.m4a'); empty = no voiceover */
+  voiceover: string;
 };
 
 export const lifestyleDefaults: LifestyleProps = {
@@ -24,7 +27,9 @@ export const lifestyleDefaults: LifestyleProps = {
   scene4: ['Back to back', 'on the Inc. 5000.'],
   scene4Note: 'No. 2,440 · 135% growth',
   thanks: ['Thank you,', 'partners.'],
-  url: 'Redfynn.com',
+  url: 'Redfynn.com/partners',
+  tagline: 'We make it simple.',
+  voiceover: '',
 };
 
 export const LIFESTYLE_SECONDS = 22;
@@ -32,6 +37,31 @@ export const LIFESTYLE_SECONDS = 22;
 const CHARCOAL = '#1C1B1F';
 const SLATE = '#4D4C4E';
 const ease = Easing.out(Easing.cubic);
+const GRAIN =
+  "url(\"data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")";
+
+/** RedFynn red-orange gradient with grain, generated in code. */
+const BrandGradient = ({shift = 0, radius = 0}: {shift?: number; radius?: number}) => (
+  <div style={{position: 'absolute', inset: 0, overflow: 'hidden', borderRadius: radius, backgroundColor: '#ED3E25'}}>
+    <div
+      style={{
+        position: 'absolute',
+        inset: -100,
+        background: `radial-gradient(circle at ${30 + shift}% ${25 - shift}%, #FF8A3D 0%, transparent 55%),
+          radial-gradient(circle at ${75 - shift}% ${70 + shift}%, #F7B58A 0%, transparent 50%),
+          radial-gradient(circle at ${50 + shift}% ${95 - shift}%, #C9201A 0%, transparent 60%)`,
+      }}
+    />
+    <div style={{position: 'absolute', inset: 0, backgroundImage: GRAIN, mixBlendMode: 'soft-light', opacity: 0.55}} />
+  </div>
+);
+
+const Pill = ({children, style}: {children: React.ReactNode; style?: React.CSSProperties}) => (
+  <div style={{position: 'relative', display: 'inline-block', borderRadius: 999, overflow: 'hidden', ...style}}>
+    <BrandGradient />
+    <div style={{position: 'relative', padding: '18px 40px', color: CHARCOAL, fontWeight: 300, fontSize: 36, letterSpacing: '0.1em', textTransform: 'uppercase', whiteSpace: 'nowrap'}}>{children}</div>
+  </div>
+);
 
 // [startSec, endSec, clip]
 const SCENES: [number, number, string][] = [
@@ -75,12 +105,18 @@ export const Lifestyle = (p: LifestyleProps) => {
         <Sequence key={clip} from={Math.round(sec(s))} durationInFrames={Math.round(sec(e - s))}>
           <AbsoluteFill style={{opacity: sceneFade(s, e)}}>
             <OffthreadVideo src={staticFile(clip)} muted style={{width: '100%', height: '100%', objectFit: 'cover'}} />
+            {/* warm RedFynn grade */}
+            <AbsoluteFill style={{background: 'linear-gradient(160deg, #FF8A3D 0%, #ED3E25 100%)', mixBlendMode: 'soft-light', opacity: 0.4}} />
             {/* soft darkening at the bottom so white type stays readable */}
             <AbsoluteFill style={{background: 'linear-gradient(to top, rgba(28,27,31,0.62) 0%, rgba(28,27,31,0.0) 55%)'}} />
           </AbsoluteFill>
         </Sequence>
       ))}
 
+      {/* brand tag over the opening two scenes */}
+      <div style={{position: 'absolute', top: 120, left: 80, opacity: interpolate(frame, [sec(0.3), sec(1.0), sec(7.9), sec(8.6)], [0, 1, 1, 0], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'})}}>
+        <Pill>Inc. 5000 · 2026</Pill>
+      </div>
       {/* 1 */}
       <div style={{...block(), opacity: sceneFade(SCENES[0][0], SCENES[0][1])}}>
         {p.scene1.map((l, i) => (
@@ -106,24 +142,31 @@ export const Lifestyle = (p: LifestyleProps) => {
         {p.scene4.map((l, i) => (
           <div key={i} style={{...text(130, 400), ...rise(SCENES[3][0], 0.6 + i * 0.45)}}>{l}</div>
         ))}
-        <div style={{height: 3, width: `${60 * rev(SCENES[3][0], 2.2, 1)}%`, backgroundColor: '#fff', margin: '40px 0 28px'}} />
-        <div style={{...text(44), fontStyle: 'italic', ...rise(SCENES[3][0], 2.6)}}>{p.scene4Note}</div>
+        <div style={{height: 3, width: `${60 * rev(SCENES[3][0], 2.2, 1)}%`, backgroundColor: '#fff', margin: '40px 0 36px'}} />
+        <div style={rise(SCENES[3][0], 2.6)}><Pill>{p.scene4Note}</Pill></div>
       </div>
 
-      {/* end card */}
-      <AbsoluteFill style={{backgroundColor: '#fff', opacity: endOpacity, alignItems: 'center', justifyContent: 'center'}}>
-        <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 70}}>
-          <Img src={staticFile('logo.png')} style={{width: 760, height: 'auto'}} />
-          <div style={{textAlign: 'center', color: CHARCOAL}}>
-            {p.thanks.map((l, i) => (
-              <div key={i} style={{fontWeight: 400, fontSize: 110, lineHeight: 1.05, ...rise(END_START, 0.5 + i * 0.4)}}>{l}</div>
-            ))}
+      {/* end card: brand gradient, logo on a white card */}
+      <AbsoluteFill style={{opacity: endOpacity}}>
+        <BrandGradient shift={Math.sin(frame / 60) * 10} />
+        <AbsoluteFill style={{alignItems: 'center', justifyContent: 'center'}}>
+          <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 64}}>
+            <div style={{backgroundColor: '#fff', borderRadius: 48, padding: '56px 70px'}}>
+              <Img src={staticFile('logo.png')} style={{width: 700, height: 'auto', display: 'block'}} />
+            </div>
+            <div style={{textAlign: 'center', color: CHARCOAL}}>
+              {p.thanks.map((l, i) => (
+                <div key={i} style={{fontWeight: 400, fontSize: 124, lineHeight: 1.04, ...rise(END_START, 0.5 + i * 0.4)}}>{l}</div>
+              ))}
+            </div>
+            <div style={{fontWeight: 300, fontStyle: 'italic', fontSize: 56, color: CHARCOAL, opacity: rev(END_START, 1.4)}}>{p.tagline}</div>
+            <div style={{border: `2px solid ${CHARCOAL}`, borderRadius: 999, padding: '20px 56px', fontWeight: 300, fontSize: 42, color: CHARCOAL, opacity: rev(END_START, 1.8)}}>{p.url}</div>
           </div>
-          <div style={{fontWeight: 300, fontSize: 40, color: SLATE, opacity: rev(END_START, 1.6)}}>{p.url}</div>
-        </div>
+        </AbsoluteFill>
       </AbsoluteFill>
 
-      {p.music && <Audio src={staticFile('celebration-music.m4a')} volume={musicVol} />}
+      {p.music && <Audio src={staticFile('celebration-music.m4a')} volume={(f) => musicVol(f) * (p.voiceover ? 0.3 : 1)} />}
+      {p.voiceover && <Audio src={staticFile(p.voiceover)} />}
     </AbsoluteFill>
   );
 };
