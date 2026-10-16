@@ -28,6 +28,11 @@ Builds a short branded video from a template and renders it to MP4. Brand rules 
 - No bold, no off-palette colors, no drop shadows, no strokes on the logo.
 - The wordmark PNGs have a white background baked in, so the logo sits on a white area, never directly on the gradient. For a logo on gradient, Charcoal or red, ask the brand owner for reversed transparent files.
 
+## Footage, photos and music
+- Use only files in `assets/stock/` that have a row in `assets/stock/LICENSES.md`, or files the user supplies. Never use unlicensed or editorial-only material, AI-generated people, or popular songs.
+- Do not ask users to paste API keys into chat. Stock search through an API is an admin task. Teammates should add licensed downloads to `assets/stock/` instead.
+- Team instructions are in `VIDEO-GUIDE.md` at the repo root. Keep it accurate when the skill changes.
+
 ## Environment gotchas (cloud sandbox)
 - Remotion tries to download Chrome from `remotion.media`, which is blocked (`ENOTFOUND`). `render.sh` passes `--browser-executable` to `/opt/pw-browsers/chromium_headless_shell-*/chrome-linux/headless_shell`. The regular `chrome` binary fails ("Old Headless mode has been removed"), so use the headless shell.
 - The render browser does not trust the proxy CA, so Google Fonts fail with `ERR_CERT_AUTHORITY_INVALID`. The font is bundled in `template/public/` and loaded with `FontFace`. To add another font, download it with `curl --cacert /root/.ccr/ca-bundle.crt` and bundle it the same way.
