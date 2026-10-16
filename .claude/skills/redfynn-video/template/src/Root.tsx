@@ -1,6 +1,7 @@
 import {Composition} from 'remotion';
 import {Announcement, defaultProps, Props} from './Announcement';
 import {Celebration, celebrationDefaults} from './Celebration';
+import {Lifestyle, lifestyleDefaults, LIFESTYLE_SECONDS} from './Lifestyle';
 
 const FPS = 30;
 
@@ -23,5 +24,6 @@ export const Root = () => (
     {make('Landscape', 1920, 1080)}
     {make('Square', 1080, 1080)}
     <Composition id="Celebration" component={Celebration} width={1080} height={1920} fps={FPS} durationInFrames={FPS * 28} defaultProps={celebrationDefaults} />
+    <Composition id="Lifestyle" component={Lifestyle} width={1080} height={1920} fps={FPS} durationInFrames={FPS * LIFESTYLE_SECONDS} defaultProps={lifestyleDefaults} />
   </>
 );
