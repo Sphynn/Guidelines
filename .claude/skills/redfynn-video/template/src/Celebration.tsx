@@ -1,4 +1,4 @@
-import {AbsoluteFill, Easing, Img, interpolate, interpolateColors, random, staticFile, useCurrentFrame, useVideoConfig} from 'remotion';
+import {AbsoluteFill, Audio, Easing, Img, interpolate, interpolateColors, random, staticFile, useCurrentFrame, useVideoConfig} from 'remotion';
 import {fontFamily} from './font';
 
 export type CelebrationProps = {
@@ -12,6 +12,7 @@ export type CelebrationProps = {
   quoteBy: string;
   closing: string[];
   url: string;
+  music: boolean;
 };
 
 export const celebrationDefaults: CelebrationProps = {
@@ -25,6 +26,7 @@ export const celebrationDefaults: CelebrationProps = {
   quoteBy: 'Shane Hurley, CEO',
   closing: ['Built with', 'our partners.'],
   url: 'redfynn.com/partners',
+  music: true,
 };
 
 // Palette: RedFynn 2024 guide (Charcoal, Red, White, Slate) plus the warm tints of its gradient artwork.
@@ -51,39 +53,119 @@ const wavePath = (baseY: number, amp: number, len: number, phase: number) => {
 };
 
 // ---------- people ----------
-type PersonProps = {x: number; y: number; phase: number; top: string; dress?: boolean; glass?: boolean; s?: number; frame: number; boost: number};
+// Cartoon characters: big heads, faces, hair, outfits, varied skin tones. Colors for clothes stay in the brand palette.
+const SKIN = ['#F6D5BD', '#F2C7A5', '#D9A07A', '#A86B45', '#7A4A2F', '#5C3A26'];
+const HAIR = {black: CH, brown: '#4A2C1A', auburn: '#A8541F', blonde: '#E2B04A'};
+type Hair = 'short' | 'bun' | 'long' | 'curly' | 'hat' | 'bald';
+type PersonProps = {
+  x: number;
+  y: number;
+  phase: number;
+  top: string;
+  bottom?: string;
+  skin: string;
+  hairCol: string;
+  hair: Hair;
+  dress?: boolean;
+  glass?: boolean;
+  shades?: boolean;
+  pose?: 0 | 1 | 2 | 3;
+  frame: number;
+  boost: number;
+};
 
-const Person = ({x, y, phase, top, dress, glass, s = 1, frame, boost}: PersonProps) => {
+const Person = ({x, y, phase, top, bottom = CH, skin, hairCol, hair, dress, glass, shades, pose = 0, frame, boost}: PersonProps) => {
   const bob = -Math.abs(Math.sin(frame * 0.16 + phase)) * (6 + 16 * boost);
-  const tilt = Math.sin(frame * 0.12 + phase) * 3;
-  const swing = 14 + 12 * boost;
-  const armL = 150 + Math.sin(frame * 0.3 + phase) * swing;
-  const armR = -(150 + Math.sin(frame * 0.3 + phase + 1.7) * swing);
+  const tilt = Math.sin(frame * 0.12 + phase) * 3.5;
+  const squash = 1 + Math.sin(frame * 0.32 + phase) * 0.035;
+  const w = Math.sin(frame * 0.3 + phase);
+  const w2 = Math.sin(frame * 0.3 + phase + 1.7);
+  const sw = 14 + 12 * boost;
+  const arms: [number, number] =
+    pose === 2 ? [110 + w * 30, -(110 + w2 * 30)] : pose === 3 ? [20 + w * 8, -(160 + Math.abs(w) * 18)] : [150 + w * sw, -(150 + w2 * sw)];
+  const happyEyes = Math.floor(phase * 10) % 2 === 0;
+  const eyeStroke = {stroke: CH, strokeWidth: 2.6, fill: 'none', strokeLinecap: 'round'} as const;
   return (
-    <g transform={`translate(${x} ${y + bob}) scale(${s}) rotate(${tilt})`}>
+    <g transform={`translate(${x} ${y + bob}) rotate(${tilt}) scale(1 ${squash})`}>
+      {/* legs + shoes */}
       {dress ? (
         <>
-          <line x1={-6} y1={-28} x2={-7} y2={0} stroke={CH} strokeWidth={10} strokeLinecap="round" />
-          <line x1={6} y1={-28} x2={7} y2={0} stroke={CH} strokeWidth={10} strokeLinecap="round" />
-          <path d="M -14 -90 L 14 -90 L 24 -26 L -24 -26 Z" fill={top} />
+          <line x1={-6} y1={-36} x2={-7} y2={-6} stroke={skin} strokeWidth={10} strokeLinecap="round" />
+          <line x1={6} y1={-36} x2={7} y2={-6} stroke={skin} strokeWidth={10} strokeLinecap="round" />
         </>
       ) : (
         <>
-          <line x1={-7} y1={-50} x2={-9} y2={0} stroke={CH} strokeWidth={11} strokeLinecap="round" />
-          <line x1={7} y1={-50} x2={9} y2={0} stroke={CH} strokeWidth={11} strokeLinecap="round" />
-          <rect x={-16} y={-90} width={32} height={44} rx={10} fill={top} />
+          <line x1={-7} y1={-40} x2={-9} y2={-6} stroke={skin} strokeWidth={10} strokeLinecap="round" />
+          <line x1={7} y1={-40} x2={9} y2={-6} stroke={skin} strokeWidth={10} strokeLinecap="round" />
         </>
       )}
-      <circle cx={0} cy={-106} r={14} fill={CH} />
+      <ellipse cx={-9} cy={-3} rx={8.5} ry={4.5} fill={CH} />
+      <ellipse cx={9} cy={-3} rx={8.5} ry={4.5} fill={CH} />
+      {/* torso + bottoms */}
+      {dress ? (
+        <path d="M -14 -92 L 14 -92 L 24 -36 L -24 -36 Z" fill={top} stroke={top} strokeWidth={6} strokeLinejoin="round" />
+      ) : (
+        <>
+          <rect x={-15} y={-60} width={30} height={22} rx={6} fill={bottom} />
+          <rect x={-16} y={-93} width={32} height={38} rx={11} fill={top} />
+        </>
+      )}
+      {/* arms: sleeve, skin, hand, optional glass */}
       {[
-        {sx: -15, ang: armL, g: false},
-        {sx: 15, ang: armR, g: glass},
+        {sx: -15, ang: arms[0], g: false},
+        {sx: 15, ang: arms[1], g: glass},
       ].map((a, i) => (
         <g key={i} transform={`rotate(${a.ang} ${a.sx} -84)`}>
-          <line x1={a.sx} y1={-84} x2={a.sx} y2={-46} stroke={CH} strokeWidth={9} strokeLinecap="round" />
-          {a.g && <path d={`M ${a.sx - 3} -44 L ${a.sx + 3} -44 L ${a.sx + 6} -26 L ${a.sx - 6} -26 Z`} fill="#fff" opacity={0.95} />}
+          <line x1={a.sx} y1={-84} x2={a.sx} y2={-46} stroke={skin} strokeWidth={9} strokeLinecap="round" />
+          <line x1={a.sx} y1={-84} x2={a.sx} y2={-70} stroke={top} strokeWidth={12} strokeLinecap="round" />
+          {a.g && <path d={`M ${a.sx - 3} -42 L ${a.sx + 3} -42 L ${a.sx + 6} -20 L ${a.sx - 6} -20 Z`} fill="#fff" opacity={0.95} />}
+          {a.g && <path d={`M ${a.sx - 4} -30 L ${a.sx + 4} -30 L ${a.sx + 5} -22 L ${a.sx - 5} -22 Z`} fill={PEACH} />}
+          <circle cx={a.sx} cy={-43} r={6.5} fill={skin} />
         </g>
       ))}
+      {/* head */}
+      <g transform="translate(0 -113)">
+        {hair === 'long' && <ellipse cx={0} cy={8} rx={23} ry={27} fill={hairCol} />}
+        <circle r={20} fill={skin} />
+        <ellipse cx={-12} cy={8} rx={4.5} ry={3} fill="#F28B82" opacity={0.4} />
+        <ellipse cx={12} cy={8} rx={4.5} ry={3} fill="#F28B82" opacity={0.4} />
+        {shades ? (
+          <g>
+            <rect x={-16} y={-7} width={14} height={10} rx={4.5} fill={CH} />
+            <rect x={2} y={-7} width={14} height={10} rx={4.5} fill={CH} />
+            <line x1={-2} y1={-4} x2={2} y2={-4} stroke={CH} strokeWidth={2.4} />
+          </g>
+        ) : happyEyes ? (
+          <g>
+            <path d="M -12 0 Q -8 -7 -4 0" {...eyeStroke} />
+            <path d="M 4 0 Q 8 -7 12 0" {...eyeStroke} />
+          </g>
+        ) : (
+          <g>
+            <circle cx={-8} cy={-2} r={3} fill={CH} />
+            <circle cx={8} cy={-2} r={3} fill={CH} />
+            <circle cx={-7} cy={-3} r={1} fill="#fff" />
+            <circle cx={9} cy={-3} r={1} fill="#fff" />
+          </g>
+        )}
+        {/* big open smile */}
+        <path d="M -9 6 Q 0 22 9 6 Z" fill={CH} />
+        <path d="M -8 6.4 Q 0 9.5 8 6.4 L 8 8.4 Q 0 11.5 -8 8.4 Z" fill="#fff" />
+        <ellipse cx={0} cy={15} rx={4} ry={2.4} fill="#F28B82" />
+        {/* hair / hat */}
+        {hair !== 'bald' && hair !== 'hat' && <path d="M -20 0 A 20 20 0 0 1 20 0 Q 12 -10 0 -9 Q -12 -10 -20 0 Z" fill={hairCol} />}
+        {hair === 'bun' && <circle cx={0} cy={-25} r={8} fill={hairCol} />}
+        {hair === 'curly' &&
+          [-14, -5, 5, 14].map((cx, i) => <circle key={cx} cx={cx} cy={i % 3 === 0 ? -11 : -17} r={8} fill={hairCol} />)}
+        {hair === 'hat' && (
+          <g>
+            <path d="M -17 -8 Q 0 -34 17 -8 Z" fill={PEACH} />
+            <rect x={-17} y={-12} width={34} height={5} fill={RED} />
+            <ellipse cx={0} cy={-8} rx={33} ry={6.5} fill={PEACH} />
+            <path d="M -33 -8 Q 0 -1 33 -8" stroke={RED} strokeWidth={2} fill="none" opacity={0.8} />
+          </g>
+        )}
+      </g>
     </g>
   );
 };
@@ -91,20 +173,20 @@ const Person = ({x, y, phase, top, dress, glass, s = 1, frame, boost}: PersonPro
 // ---------- yacht ----------
 const Yacht = ({frame, boost}: {frame: number; boost: number}) => {
   const main: Omit<PersonProps, 'frame' | 'boost'>[] = [
-    {x: -330, y: -120, phase: 0.2, top: '#fff'},
-    {x: -240, y: -120, phase: 1.4, top: RED, dress: true, glass: true},
-    {x: -150, y: -120, phase: 2.6, top: PEACH},
-    {x: -50, y: -120, phase: 0.9, top: '#fff', glass: true},
-    {x: 50, y: -120, phase: 3.3, top: RED},
-    {x: 150, y: -120, phase: 4.1, top: '#fff', dress: true},
-    {x: 255, y: -120, phase: 5.2, top: PEACH, glass: true},
-    {x: 340, y: -120, phase: 2.1, top: RED},
+    {x: -330, y: -120, phase: 0.2, top: RED, skin: SKIN[1], hairCol: HAIR.black, hair: 'short', pose: 0},
+    {x: -240, y: -120, phase: 1.4, top: CH, dress: true, skin: SKIN[3], hairCol: HAIR.black, hair: 'curly', glass: true, pose: 1},
+    {x: -150, y: -120, phase: 2.6, top: ORANGE, skin: SKIN[0], hairCol: HAIR.blonde, hair: 'long', pose: 2},
+    {x: -50, y: -120, phase: 0.9, top: RED, dress: true, skin: SKIN[4], hairCol: HAIR.brown, hair: 'bun', glass: true, pose: 1},
+    {x: 50, y: -120, phase: 3.3, top: CH, skin: SKIN[2], hairCol: HAIR.black, hair: 'bald', shades: true, pose: 3},
+    {x: 150, y: -120, phase: 4.1, top: PEACH, dress: true, skin: SKIN[5], hairCol: HAIR.black, hair: 'curly', pose: 0},
+    {x: 255, y: -120, phase: 5.2, top: RED, bottom: '#fff', skin: SKIN[1], hairCol: HAIR.auburn, hair: 'hat', glass: true, pose: 1},
+    {x: 340, y: -120, phase: 2.1, top: CH, skin: SKIN[0], hairCol: HAIR.brown, hair: 'short', shades: true, pose: 2},
   ];
   const fly: Omit<PersonProps, 'frame' | 'boost'>[] = [
-    {x: -200, y: -275, phase: 1.1, top: RED, glass: true},
-    {x: -100, y: -275, phase: 3.9, top: '#fff', dress: true},
-    {x: 0, y: -275, phase: 0.4, top: PEACH, glass: true},
-    {x: 95, y: -275, phase: 2.8, top: '#fff'},
+    {x: -200, y: -275, phase: 1.1, top: ORANGE, skin: SKIN[4], hairCol: HAIR.auburn, hair: 'long', glass: true, pose: 1},
+    {x: -100, y: -275, phase: 3.9, top: CH, dress: true, skin: SKIN[2], hairCol: HAIR.black, hair: 'bun', pose: 0},
+    {x: 0, y: -275, phase: 0.4, top: RED, skin: SKIN[3], hairCol: HAIR.black, hair: 'short', shades: true, glass: true, pose: 1},
+    {x: 95, y: -275, phase: 2.8, top: '#fff', skin: SKIN[0], hairCol: HAIR.blonde, hair: 'curly', pose: 3},
   ];
   const flags = Array.from({length: 15}, (_, i) => i);
   const sag = (x: number) => -440 + 40 * Math.sin(((x + 290) / 470) * Math.PI);
@@ -141,13 +223,6 @@ const Yacht = ({frame, boost}: {frame: number; boost: number}) => {
       <rect x={-300} y={-486} width={490} height={18} rx={8} fill={CH} />
       <line x1={-50} y1={-486} x2={-50} y2={-590} stroke={CH} strokeWidth={5} />
       <circle cx={-50} cy={-596} r={7} fill={RED} />
-      {/* people on flybridge, then main deck */}
-      {fly.map((p, i) => (
-        <Person key={`f${i}`} {...p} frame={frame} boost={boost} />
-      ))}
-      {main.map((p, i) => (
-        <Person key={`m${i}`} {...p} frame={frame} boost={boost} />
-      ))}
       {/* bunting */}
       <path d={`M -300 -468 Q -50 -400 190 -468`} stroke={CH} strokeWidth={2} fill="none" opacity={0} />
       {flags.map((i) => {
@@ -157,6 +232,13 @@ const Yacht = ({frame, boost}: {frame: number; boost: number}) => {
         return <polygon key={i} points={`${x - 12},${y - 8} ${x + 12},${y - 8} ${x},${y + 26}`} fill={flagCols[i % 4]} transform={`rotate(${wob} ${x} ${y - 8})`} />;
       })}
       <path d={`M -290 -440 Q -50 ${-440 + 80} 180 -440`} stroke={CH} strokeWidth={2} fill="none" opacity={0.6} />
+      {/* people on flybridge, then main deck */}
+      {fly.map((p, i) => (
+        <Person key={`f${i}`} {...p} frame={frame} boost={boost} />
+      ))}
+      {main.map((p, i) => (
+        <Person key={`m${i}`} {...p} frame={frame} boost={boost} />
+      ))}
     </g>
   );
 };
@@ -298,6 +380,7 @@ export const Celebration = (p: CelebrationProps) => {
 
   return (
     <AbsoluteFill style={{backgroundColor: '#fff', fontFamily}}>
+      {p.music && <Audio src={staticFile('celebration-music.m4a')} />}
       {/* end card, revealed when the scene fades out. The logo itself never animates. */}
       <div style={{position: 'absolute', top: 430, left: 0, right: 0, display: 'flex', justifyContent: 'center'}}>
         <Img src={staticFile('logo.png')} style={{width: 760, height: 'auto'}} />
