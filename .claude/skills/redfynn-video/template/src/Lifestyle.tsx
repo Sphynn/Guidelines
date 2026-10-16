@@ -18,10 +18,10 @@ export const lifestyleDefaults: LifestyleProps = {
   music: true,
   scene1: ['We’ve been', 'in the game'],
   scene2: ['Our partners', 'call their', 'own shots.'],
-  count: 5002,
+  count: 2,
   countLabel: ['years', 'running.'],
-  scene4Overline: 'Okay, fine.',
-  scene4: ['Inc. 5000,', 'two years', 'in a row.'],
+  scene4Overline: '2025 · 2026',
+  scene4: ['Back to back', 'on the Inc. 5000.'],
   scene4Note: 'No. 2,440 · 135% growth',
   thanks: ['Thank you,', 'partners.'],
   url: 'Redfynn.com',
@@ -62,7 +62,7 @@ export const Lifestyle = (p: LifestyleProps) => {
 
   // count-up
   const c0 = 8.4;
-  const cp = interpolate(local(c0), [0.5, 3.4], [0, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: Easing.out(Easing.quad)});
+  const cp = interpolate(local(c0), [0.5, 2.0], [0, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: Easing.out(Easing.quad)});
   const countText = Math.round(cp * p.count).toLocaleString('en-US');
 
   const endOpacity = interpolate(frame, [sec(END_START), sec(END_START + 0.5)], [0, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
@@ -97,14 +97,14 @@ export const Lifestyle = (p: LifestyleProps) => {
       <div style={{...block({bottom: 'auto', top: 230}), opacity: sceneFade(SCENES[2][0], SCENES[2][1])}}>
         <div style={{...text(300, 300), fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.02em', ...rise(SCENES[2][0], 0.1)}}>{countText}</div>
         {p.countLabel.map((l, i) => (
-          <div key={i} style={{...text(140, 400), ...rise(SCENES[2][0], 3.0 + i * 0.4)}}>{l}</div>
+          <div key={i} style={{...text(140, 400), ...rise(SCENES[2][0], 2.2 + i * 0.4)}}>{l}</div>
         ))}
       </div>
       {/* 4 */}
       <div style={{...block({bottom: 'auto', top: 230}), opacity: sceneFade(SCENES[3][0], SCENES[3][1])}}>
         <div style={{...over, ...rise(SCENES[3][0], 0.2)}}>{p.scene4Overline}</div>
         {p.scene4.map((l, i) => (
-          <div key={i} style={{...text(138, 400), ...rise(SCENES[3][0], 0.6 + i * 0.45)}}>{l}</div>
+          <div key={i} style={{...text(130, 400), ...rise(SCENES[3][0], 0.6 + i * 0.45)}}>{l}</div>
         ))}
         <div style={{height: 3, width: `${60 * rev(SCENES[3][0], 2.2, 1)}%`, backgroundColor: '#fff', margin: '40px 0 28px'}} />
         <div style={{...text(44), fontStyle: 'italic', ...rise(SCENES[3][0], 2.6)}}>{p.scene4Note}</div>
