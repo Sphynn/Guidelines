@@ -1,51 +1,64 @@
 import {AbsoluteFill, Audio, Easing, Img, interpolate, OffthreadVideo, Sequence, staticFile, useCurrentFrame, useVideoConfig} from 'remotion';
 import {fontFamily} from './font';
 
+export type Scene = {
+  start: number;
+  end: number;
+  clip: string;
+  pos: 'top' | 'bottom';
+  size?: number;
+  overline?: string;
+  lines: string[];
+  /** big count-up number shown above the lines */
+  count?: number;
+  /** gradient pill under the lines */
+  note?: string;
+};
+
 export type LifestyleProps = {
   music: boolean;
   /** file in public/ */
   musicFile: string;
-  scene1: string[];
-  scene2: string[];
-  count: number;
-  countLabel: string[];
-  scene4Overline: string;
-  scene4: string[];
-  scene4Note: string;
-  thanks: string[];
-  url: string;
-  tagline: string;
   /** file in public/ (e.g. 'voiceover.m4a'); empty = no voiceover */
   voiceover: string;
+  scenes: Scene[];
+  endStart: number;
+  thanks: string[];
+  tagline: string;
+  url: string;
 };
+
+export const LIFESTYLE_SECONDS = 48;
 
 export const lifestyleDefaults: LifestyleProps = {
   music: true,
   musicFile: 'lifestyle-music.m4a',
-  scene1: ['We’ve been', 'in the game'],
-  scene2: ['Our partners', 'call their', 'own shots.'],
-  count: 2,
-  countLabel: ['years', 'running.'],
-  scene4Overline: '2025 · 2026',
-  scene4: ['Back to back', 'on the Inc. 5000.'],
-  scene4Note: 'No. 2,440 · 135% growth',
-  thanks: ['Thank you,', 'partners.'],
-  url: 'Redfynn.com/partners',
-  tagline: 'We make it simple.',
   voiceover: '',
+  scenes: [
+    {start: 0, end: 5.0, clip: 'stock/pixabay-114445-vertical.mp4', pos: 'bottom', size: 150, lines: ['We’ve been', 'in the game']},
+    {start: 4.6, end: 9.6, clip: 'stock/pixabay-57676-vertical.mp4', pos: 'bottom', size: 138, lines: ['Our partners', 'call their', 'own shots.']},
+    {start: 9.2, end: 14.2, clip: 'stock/pixabay-218139-vertical.mp4', pos: 'bottom', size: 150, lines: ['Deal by deal,']},
+    {start: 13.8, end: 18.8, clip: 'stock/pixabay-38371-vertical.mp4', pos: 'bottom', size: 150, lines: ['Merchant by', 'merchant.']},
+    {start: 18.4, end: 24.0, clip: 'stock/pixabay-282610-vertical.mp4', pos: 'top', size: 112, lines: ['This one belongs', 'to our partners.']},
+    {start: 23.6, end: 29.6, clip: 'stock/pixabay-9473-vertical.mp4', pos: 'top', size: 140, count: 2, lines: ['years', 'running.']},
+    {start: 29.2, end: 34.7, clip: 'stock/pixabay-219596-vertical.mp4', pos: 'top', size: 116, overline: '2025 · 2026', lines: ['Back to back', 'on the Inc. 5000.'], note: 'No. 2,440 · 135% growth'},
+    {start: 34.3, end: 38.9, clip: 'stock/pixabay-199208-vertical.mp4', pos: 'bottom', size: 150, lines: ['Freedom', 'is the point.']},
+    {start: 38.5, end: 43.0, clip: 'stock/pixabay-114445-b-vertical.mp4', pos: 'bottom', size: 150, lines: ['Here’s to', 'the next one.']},
+  ],
+  endStart: 42.6,
+  thanks: ['Thank you,', 'partners.'],
+  tagline: 'We make it simple.',
+  url: 'Redfynn.com/partners',
 };
 
-export const LIFESTYLE_SECONDS = 22;
-
 const CHARCOAL = '#1C1B1F';
-const SLATE = '#4D4C4E';
 const ease = Easing.out(Easing.cubic);
 const GRAIN =
   "url(\"data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")";
 
 /** RedFynn red-orange gradient with grain, generated in code. */
-const BrandGradient = ({shift = 0, radius = 0}: {shift?: number; radius?: number}) => (
-  <div style={{position: 'absolute', inset: 0, overflow: 'hidden', borderRadius: radius, backgroundColor: '#ED3E25'}}>
+const BrandGradient = ({shift = 0}: {shift?: number}) => (
+  <div style={{position: 'absolute', inset: 0, overflow: 'hidden', backgroundColor: '#ED3E25'}}>
     <div
       style={{
         position: 'absolute',
@@ -59,25 +72,16 @@ const BrandGradient = ({shift = 0, radius = 0}: {shift?: number; radius?: number
   </div>
 );
 
-const Pill = ({children, style}: {children: React.ReactNode; style?: React.CSSProperties}) => (
-  <div style={{position: 'relative', display: 'inline-block', borderRadius: 999, overflow: 'hidden', ...style}}>
+const Pill = ({children}: {children: React.ReactNode}) => (
+  <div style={{position: 'relative', display: 'inline-block', borderRadius: 999, overflow: 'hidden'}}>
     <BrandGradient />
     <div style={{position: 'relative', padding: '18px 40px', color: CHARCOAL, fontWeight: 300, fontSize: 36, letterSpacing: '0.1em', textTransform: 'uppercase', whiteSpace: 'nowrap'}}>{children}</div>
   </div>
 );
 
-// [startSec, endSec, clip]
-const SCENES: [number, number, string][] = [
-  [0, 4.6, 'stock/pixabay-114445-vertical.mp4'],
-  [4.2, 8.8, 'stock/pixabay-57676-vertical.mp4'],
-  [8.4, 13.9, 'stock/pixabay-9473-vertical.mp4'],
-  [13.5, 18.6, 'stock/pixabay-219596-vertical.mp4'],
-];
-const END_START = 18.2;
-
 export const Lifestyle = (p: LifestyleProps) => {
   const frame = useCurrentFrame();
-  const {fps} = useVideoConfig();
+  const {fps, durationInFrames} = useVideoConfig();
   const sec = (s: number) => s * fps;
   const local = (start: number) => frame / fps - start;
   const rev = (start: number, at: number, len = 0.8) =>
@@ -89,62 +93,64 @@ export const Lifestyle = (p: LifestyleProps) => {
   const sceneFade = (start: number, end: number) =>
     interpolate(frame, [sec(start), sec(start + 0.4), sec(end - 0.4), sec(end)], [start === 0 ? 1 : 0, 1, 1, 0], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
 
-  const text = (size: number, weight = 300): React.CSSProperties => ({fontWeight: weight, fontSize: size, lineHeight: 1.04, color: '#fff'});
-  const over: React.CSSProperties = {fontWeight: 300, fontSize: 34, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#fff', marginBottom: 28};
-  const block = (extra?: React.CSSProperties): React.CSSProperties => ({position: 'absolute', left: 80, right: 80, bottom: 230, ...extra});
+  const white = (size: number, weight = 400): React.CSSProperties => ({fontWeight: weight, fontSize: size, lineHeight: 1.04, color: '#fff'});
+  const endOpacity = interpolate(frame, [sec(p.endStart), sec(p.endStart + 0.5)], [0, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
+  const musicVol = (f: number) =>
+    (p.voiceover ? 0.3 : 1) * interpolate(f, [0, sec(0.3), durationInFrames - sec(2), durationInFrames], [0, 1, 1, 0], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
 
-  // count-up
-  const c0 = 8.4;
-  const cp = interpolate(local(c0), [0.5, 2.0], [0, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: Easing.out(Easing.quad)});
-  const countText = Math.round(cp * p.count).toLocaleString('en-US');
+  // brand tag over the opening two scenes
+  const tagOpacity = interpolate(frame, [sec(0.3), sec(1.0), sec(p.scenes[1].end - 0.7), sec(p.scenes[1].end)], [0, 1, 1, 0], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
 
-  const endOpacity = interpolate(frame, [sec(END_START), sec(END_START + 0.5)], [0, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
   return (
     <AbsoluteFill style={{backgroundColor: '#000', fontFamily}}>
-      {SCENES.map(([s, e, clip], i) => (
-        <Sequence key={clip} from={Math.round(sec(s))} durationInFrames={Math.round(sec(e - s))}>
-          <AbsoluteFill style={{opacity: sceneFade(s, e)}}>
-            <OffthreadVideo src={staticFile(clip)} muted style={{width: '100%', height: '100%', objectFit: 'cover'}} />
+      {p.scenes.map((s) => (
+        <Sequence key={s.clip + s.start} from={Math.round(sec(s.start))} durationInFrames={Math.round(sec(s.end - s.start))}>
+          <AbsoluteFill style={{opacity: sceneFade(s.start, s.end)}}>
+            <OffthreadVideo src={staticFile(s.clip)} muted style={{width: '100%', height: '100%', objectFit: 'cover'}} />
             {/* warm RedFynn grade */}
             <AbsoluteFill style={{background: 'linear-gradient(160deg, #FF8A3D 0%, #ED3E25 100%)', mixBlendMode: 'soft-light', opacity: 0.4}} />
-            {/* soft darkening at the bottom so white type stays readable */}
-            <AbsoluteFill style={{background: 'linear-gradient(to top, rgba(28,27,31,0.62) 0%, rgba(28,27,31,0.0) 55%)'}} />
+            {/* soft darkening behind the type so white text stays readable */}
+            <AbsoluteFill
+              style={{
+                background:
+                  s.pos === 'top'
+                    ? 'linear-gradient(to bottom, rgba(28,27,31,0.6) 0%, rgba(28,27,31,0) 52%)'
+                    : 'linear-gradient(to top, rgba(28,27,31,0.74) 0%, rgba(28,27,31,0) 62%)',
+              }}
+            />
           </AbsoluteFill>
         </Sequence>
       ))}
 
-      {/* brand tag over the opening two scenes */}
-      <div style={{position: 'absolute', top: 120, left: 80, opacity: interpolate(frame, [sec(0.3), sec(1.0), sec(7.9), sec(8.6)], [0, 1, 1, 0], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'})}}>
+      <div style={{position: 'absolute', top: 120, left: 80, opacity: tagOpacity}}>
         <Pill>Inc. 5000 · 2026</Pill>
       </div>
-      {/* 1 */}
-      <div style={{...block(), opacity: sceneFade(SCENES[0][0], SCENES[0][1])}}>
-        {p.scene1.map((l, i) => (
-          <div key={i} style={{...text(150, 400), ...rise(SCENES[0][0], 0.5 + i * 0.5)}}>{l}</div>
-        ))}
-      </div>
-      {/* 2 */}
-      <div style={{...block(), opacity: sceneFade(SCENES[1][0], SCENES[1][1])}}>
-        {p.scene2.map((l, i) => (
-          <div key={i} style={{...text(138, 400), ...rise(SCENES[1][0], 0.3 + i * 0.45)}}>{l}</div>
-        ))}
-      </div>
-      {/* 3 count-up */}
-      <div style={{...block({bottom: 'auto', top: 230}), opacity: sceneFade(SCENES[2][0], SCENES[2][1])}}>
-        <div style={{...text(300, 300), fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.02em', ...rise(SCENES[2][0], 0.1)}}>{countText}</div>
-        {p.countLabel.map((l, i) => (
-          <div key={i} style={{...text(140, 400), ...rise(SCENES[2][0], 2.2 + i * 0.4)}}>{l}</div>
-        ))}
-      </div>
-      {/* 4 */}
-      <div style={{...block({bottom: 'auto', top: 230}), opacity: sceneFade(SCENES[3][0], SCENES[3][1])}}>
-        <div style={{...over, ...rise(SCENES[3][0], 0.2)}}>{p.scene4Overline}</div>
-        {p.scene4.map((l, i) => (
-          <div key={i} style={{...text(130, 400), ...rise(SCENES[3][0], 0.6 + i * 0.45)}}>{l}</div>
-        ))}
-        <div style={{height: 3, width: `${60 * rev(SCENES[3][0], 2.2, 1)}%`, backgroundColor: '#fff', margin: '40px 0 36px'}} />
-        <div style={rise(SCENES[3][0], 2.6)}><Pill>{p.scene4Note}</Pill></div>
-      </div>
+
+      {p.scenes.map((s) => {
+        const cp = interpolate(local(s.start), [0.5, 2.0], [0, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: Easing.out(Easing.quad)});
+        const pos: React.CSSProperties = s.pos === 'top' ? {top: s.start < 10 ? 200 : 230} : {bottom: 230};
+        return (
+          <div key={'t' + s.start} style={{position: 'absolute', left: 80, right: 80, ...pos, opacity: sceneFade(s.start, s.end)}}>
+            {s.overline && (
+              <div style={{fontWeight: 300, fontSize: 34, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#fff', marginBottom: 28, ...rise(s.start, 0.2)}}>{s.overline}</div>
+            )}
+            {s.count !== undefined && (
+              <div style={{...white(300, 300), fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.02em', ...rise(s.start, 0.1)}}>{Math.round(cp * s.count).toLocaleString('en-US')}</div>
+            )}
+            {s.lines.map((l, i) => (
+              <div key={i} style={{...white(s.size ?? 140), ...rise(s.start, (s.count !== undefined ? 2.2 : 0.5) + i * 0.45)}}>{l}</div>
+            ))}
+            {s.note && (
+              <>
+                <div style={{height: 3, width: `${60 * rev(s.start, 2.0, 1)}%`, backgroundColor: '#fff', margin: '40px 0 36px'}} />
+                <div style={rise(s.start, 2.4)}>
+                  <Pill>{s.note}</Pill>
+                </div>
+              </>
+            )}
+          </div>
+        );
+      })}
 
       {/* end card: brand gradient, logo on a white card */}
       <AbsoluteFill style={{opacity: endOpacity}}>
@@ -156,16 +162,16 @@ export const Lifestyle = (p: LifestyleProps) => {
             </div>
             <div style={{textAlign: 'center', color: CHARCOAL}}>
               {p.thanks.map((l, i) => (
-                <div key={i} style={{fontWeight: 400, fontSize: 124, lineHeight: 1.04, ...rise(END_START, 0.5 + i * 0.4)}}>{l}</div>
+                <div key={i} style={{fontWeight: 400, fontSize: 124, lineHeight: 1.04, ...rise(p.endStart, 0.5 + i * 0.4)}}>{l}</div>
               ))}
             </div>
-            <div style={{fontWeight: 300, fontStyle: 'italic', fontSize: 56, color: CHARCOAL, opacity: rev(END_START, 1.4)}}>{p.tagline}</div>
-            <div style={{border: `2px solid ${CHARCOAL}`, borderRadius: 999, padding: '20px 56px', fontWeight: 300, fontSize: 42, color: CHARCOAL, opacity: rev(END_START, 1.8)}}>{p.url}</div>
+            <div style={{fontWeight: 300, fontStyle: 'italic', fontSize: 56, color: CHARCOAL, opacity: rev(p.endStart, 1.4)}}>{p.tagline}</div>
+            <div style={{border: `2px solid ${CHARCOAL}`, borderRadius: 999, padding: '20px 56px', fontWeight: 300, fontSize: 42, color: CHARCOAL, opacity: rev(p.endStart, 1.8)}}>{p.url}</div>
           </div>
         </AbsoluteFill>
       </AbsoluteFill>
 
-      {p.music && <Audio src={staticFile(p.musicFile)} volume={p.voiceover ? 0.3 : 1} />}
+      {p.music && <Audio src={staticFile(p.musicFile)} volume={musicVol} />}
       {p.voiceover && <Audio src={staticFile(p.voiceover)} />}
     </AbsoluteFill>
   );
