@@ -3,6 +3,8 @@ import {fontFamily} from './font';
 
 export type LifestyleProps = {
   music: boolean;
+  /** file in public/ */
+  musicFile: string;
   scene1: string[];
   scene2: string[];
   count: number;
@@ -19,6 +21,7 @@ export type LifestyleProps = {
 
 export const lifestyleDefaults: LifestyleProps = {
   music: true,
+  musicFile: 'lifestyle-music.m4a',
   scene1: ['We’ve been', 'in the game'],
   scene2: ['Our partners', 'call their', 'own shots.'],
   count: 2,
@@ -96,9 +99,6 @@ export const Lifestyle = (p: LifestyleProps) => {
   const countText = Math.round(cp * p.count).toLocaleString('en-US');
 
   const endOpacity = interpolate(frame, [sec(END_START), sec(END_START + 0.5)], [0, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
-  const musicVol = (f: number) =>
-    interpolate(f, [0, sec(1), sec(LIFESTYLE_SECONDS - 2), sec(LIFESTYLE_SECONDS)], [0, 0.7, 0.7, 0], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
-
   return (
     <AbsoluteFill style={{backgroundColor: '#000', fontFamily}}>
       {SCENES.map(([s, e, clip], i) => (
@@ -165,7 +165,7 @@ export const Lifestyle = (p: LifestyleProps) => {
         </AbsoluteFill>
       </AbsoluteFill>
 
-      {p.music && <Audio src={staticFile('celebration-music.m4a')} volume={(f) => musicVol(f) * (p.voiceover ? 0.3 : 1)} />}
+      {p.music && <Audio src={staticFile(p.musicFile)} volume={p.voiceover ? 0.3 : 1} />}
       {p.voiceover && <Audio src={staticFile(p.voiceover)} />}
     </AbsoluteFill>
   );
